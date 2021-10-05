@@ -67,7 +67,7 @@ def get_page_soup(page_url: str):
     return soup
 
 
-def get_itemprop(page_soup, item_price):
+def get_itemprop(page_soup: object, item_price: str) -> object:
     """
     Check that web-page has html-element with itemprop='price' and a price in a 'content' attribute
     or in a text of an element.
@@ -89,9 +89,9 @@ def get_itemprop(page_soup, item_price):
     return None
 
 
-def get_html_element_with_price(page_soup, current_price):
+def get_html_element_with_price(page_soup: object, current_price: str) -> object:
     """
-    Get html-element from web-page for tracking price. None - if html-element for tracking couldn't be found.
+    Get html-element from web-page for tracking price.
 
     :param page_soup: BeautifulSoup object of a web-page.
     :type page_soup: object
@@ -116,7 +116,7 @@ def get_html_element_with_price(page_soup, current_price):
     return result
 
 
-def get_price_from_html_element(soup, element) -> float:
+def get_price_from_html_element(soup: object, element: object) -> float:
     """
     Get price of an item from a specified html-element.
 
