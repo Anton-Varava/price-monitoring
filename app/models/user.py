@@ -1,7 +1,13 @@
-from app import db
+from app import db, login_manager
+from flask_login import UserMixin
 
 
-class User(db.Model):
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+class User(db.Model, UserMixin):
     """
     User model description
     """
@@ -14,6 +20,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_staff = db.Column(db.Boolean, default=False)
     is_superuser = db.Column(db.Boolean, default=False)
+    items = db.relationship('Item', backref='user', lazy=True)
 
     def __repr__(self):
-        return f'<User {self.first_name}, {self.email}>'
+        return f'<User {self.username}, {self.email}>'
