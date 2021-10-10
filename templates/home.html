@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<ul>
+    {% for item in items %}
+    <li>
+        <a href="{{ item.item_url}}">Link</a>
+        <p>Current price: {{ item.current_price }}</p>
+        <p>Html-attributes: "{{ item.html_attrs }}"</p>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock content %}
