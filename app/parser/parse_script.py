@@ -1,3 +1,4 @@
+import pyppeteer
 from bs4 import BeautifulSoup
 import re
 from requests_html import HTMLSession, AsyncHTMLSession
@@ -93,6 +94,14 @@ class Item:
         :rtype: object
         """
         session = AsyncHTMLSession()
+        browser = await pyppeteer.launch({
+            'ignoreHTTPSErrors': True,
+            'headless': True,
+            'handleSIGINT': False,
+            'handleSIGTERM': False,
+            'handleSIGHUP': False
+        })
+        session._browser = browser
         response = await session.get(self.item_url, headers=HEADER, cookies=session.cookies.get_dict())
         if response.status_code != 200:
             # render html by js
@@ -127,6 +136,8 @@ class Item:
             # Remove a price indication from a html-element attributes
             for key, value in list(html_attrs.items()):
                 if value == price:
+                    del html_attrs[key]
+                elif key == 'content':
                     del html_attrs[key]
                 elif key == 'style':
                     del html_attrs[key]
@@ -197,6 +208,22 @@ class Item:
         return self._get_price_number_from_str(current_html_element.text)
 
     @staticmethod
+    async def get_current_price_by_html_attrs(item_url, html_attrs):
+        session = AsyncHTMLSession()
+        response = await session.get(item_url, headers=HEADER, cookies=session.cookies.get_dict())
+        if response.status_code != 200:
+            # render html by js
+            await response.html.arender(sleep=1.5)
+        await session.close()
+        page_soup = BeautifulSoup(response.html.html, 'html.parser')
+        current_html_element = page_soup.find(attrs=html_attrs)
+        attrs_current_html_element = current_html_element.attrs
+        if attrs_current_html_element.get('content'):
+            return Item._get_price_number_from_str(attrs_current_html_element.get('content'))
+        return Item._get_price_number_from_str(current_html_element.text)
+
+
+    @staticmethod
     def _get_price_number_from_str(string_with_price: str) -> float:
         """
         Gets item price from string and converts to float.
@@ -208,6 +235,7 @@ class Item:
         """
         price = None
         price_in_string = re.search(r'\d+(\s|\\xa0)?\d+((\.|,)\d{1,2})?', string_with_price)
+        # price_in_string = re.search(r'(\d+(\s|\\xa0|,)?)+((\.|,)\d{1,2})?', string_with_price)
         if price_in_string:
             price = float(price_in_string.group().replace(',', '.').replace(u'\xa0', '').replace(' ', ''))
         return price
@@ -252,12 +280,67 @@ class RozetkaItem(Item):
         """
         return {'class': ['product-prices__big']}
 
+    @staticmethod
+    async def get_current_price_by_html_attrs(item_url, html_attrs):
+        session = AsyncHTMLSession()
+        browser = await pyppeteer.launch({
+            'ignoreHTTPSErrors': True,
+            'headless': True,
+            'handleSIGINT': False,
+            'handleSIGTERM': False,
+            'handleSIGHUP': False
+        })
+        session._browser = browser
+        response = await session.get(item_url, headers=HEADER, cookies=session.cookies.get_dict(), )
+        await response.html.arender()
+        await session.close()
+        page_soup = BeautifulSoup(response.html.html, 'html.parser')
+        current_html_element = page_soup.find(attrs=html_attrs)
+        attrs_current_html_element = current_html_element.attrs
+        if attrs_current_html_element.get('content'):
+            return RozetkaItem._get_price_number_from_str(attrs_current_html_element.get('content'))
+        return RozetkaItem._get_price_number_from_str(current_html_element.text)
+
+
+class UsaAutoOnlineItem(Item):
+    """
+    Item object from rozetka.com.ua store.
+    """
+
+    async def _get_response_from_item_source(self):
+        """
+        Gets response from Rozetka web-page.
+        :return: Response object
+        :rtype: object
+        """
+        session = AsyncHTMLSession()
+        response = await session.get(self.item_url, headers=HEADER, cookies=session.cookies.get_dict(), verify=False)
+        if response.status_code != 200:
+            # render html by js
+            await response.html.arender(sleep=1.5)
+        await session.close()
+        return response
+
+    @staticmethod
+    async def get_current_price_by_html_attrs(item_url, html_attrs):
+        session = AsyncHTMLSession()
+        response = await session.get(item_url, headers=HEADER, cookies=session.cookies.get_dict(), verify=False)
+        await session.close()
+        page_soup = BeautifulSoup(response.html.html, 'html.parser')
+        current_html_element = page_soup.find(attrs=html_attrs)
+        attrs_current_html_element = current_html_element.attrs
+        if attrs_current_html_element.get('content'):
+            return UsaAutoOnlineItem._get_price_number_from_str(attrs_current_html_element.get('content'))
+        return UsaAutoOnlineItem._get_price_number_from_str(current_html_element.text)
+
 
 class ItemFactory:
     """
     Factory for creating an Item objects.
     """
-    _sources = {'bt.rozetka.com.ua': RozetkaItem}
+    _sources = {'bt.rozetka.com.ua': RozetkaItem,
+                'rozetka.com.ua': RozetkaItem,
+                'usa-auto-online.com': UsaAutoOnlineItem}
 
     @staticmethod
     async def create_item(item_url: str, current_price: str) -> object:
@@ -293,7 +376,19 @@ class ItemFactory:
         else:
             item = DefaultItem(item_url=item_url, current_price=current_price)
         await item.init_attr()
+        if not item.html_attrs:
+            return None
         return item
+
+    @staticmethod
+    async def get_current_price(item_url, html_attr):
+        domain = urlparse(item_url).netloc
+        class_for_item = ItemFactory._sources.get(domain)
+        if class_for_item:
+            current_price = await class_for_item.get_current_price_by_html_attrs(item_url=item_url, html_attrs=html_attr)
+        else:
+            current_price = await DefaultItem.get_current_price_by_html_attrs(item_url=item_url, html_attrs=html_attr)
+        return current_price
 
 
 async def run_all():

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <a class="btn btn-secondary" href="{{ url_for('add_item')}}" role="button">Add new item</a>
+<a class="btn btn-secondary" href="{{ url_for('update_prices')}}" role="button">Update All</a>
 <ul>
     {% for item in items %}
     <li>

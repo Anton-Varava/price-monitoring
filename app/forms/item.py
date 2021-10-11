@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, FloatField, DecimalField
-from wtforms.validators import DataRequired, NumberRange, Optional
+from wtforms import StringField, SubmitField, DecimalField
+from wtforms.validators import DataRequired, Optional
 
 
 class CreateItemForm(FlaskForm):
@@ -12,5 +12,3 @@ class CreateItemForm(FlaskForm):
     min_desired_price = DecimalField('Minimum desired price', validators=[Optional()])
     max_allowable_price = DecimalField('Maximum allowable price', validators=[Optional()])
     submit = SubmitField('Confirm')
-
-
