@@ -233,7 +233,7 @@ class RozetkaItem(Item):
         """
         session = AsyncHTMLSession()
         response = await session.get(self.item_url, headers=HEADER, cookies=session.cookies.get_dict(), )
-        await response.html.arender(sleep=1.5)
+        await response.html.arender()
         await session.close()
         return response
 
