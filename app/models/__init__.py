@@ -1,2 +1,2 @@
-from .item import Item, ItemPriceHistory
+from .item import Item, ItemPriceHistory, ItemsFolder
 from .user import User

@@ -1,1 +1,1 @@
-from .parse_script import ItemFactory
+from .factory import ItemFactory

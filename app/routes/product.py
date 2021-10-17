@@ -65,6 +65,8 @@ async def update_current_price(product):
         html_attrs = json.loads(product.html_attrs)
         item_url = product.item_url
         current_price = await ItemFactory.get_current_price(item_url=item_url, html_attr=html_attrs)
+        # loop = asyncio.get_running_loop()
+        # current_price = loop.run_until_complete(await ItemFactory.get_current_price(item_url=item_url, html_attr=html_attrs))
         product.current_price = current_price
         db.session.commit()
         update_price_history(product=product)
@@ -74,26 +76,45 @@ async def update_current_price(product):
 
 
 def update_price_history(product):
-    # print(product)
+    print(product)
+    # last_price = get_last_price(product)
     new_history = ItemPriceHistory(item_id=product.id, price=product.current_price)
     try:
         db.session.add(new_history)
         db.session.commit()
-    except:
+    except Exception as ex:
+        print(ex)
         print('Не получилось обновить историю')
+    # if last_price != new_history.price:
+    #     print('Изменение цены детектед')
 
 
 @app.route('/update')
 async def update_prices():
-    # start_time = datetime.now()
+    items_count = Item.query.filter_by(user_id=current_user.get_id()).count()
+    if not items_count:
+        flash('No items to update', 'danger')
+        return redirect(url_for('home'))
     try:
+        start_time = datetime.now()
         tasks = (update_current_price(product) for product in Item.query.filter_by(user_id=current_user.get_id()))
         await asyncio.gather(*tasks)
-        flash('A product prices are updated successfully', 'success')
-    except:
+
+        # To compare synchronous and asynchronous updates
+        # for product in Item.query.filter_by(user_id=current_user.get_id()):
+        #     await update_current_price(product)
+
+        finish_time = (datetime.now() - start_time)
+        flash(f'A product prices are updated successfully ({finish_time} seconds)', 'success')
+    except Exception as e:
+        print(e)
         flash('Failed to update a product prices', 'danger')
-    # print(datetime.now() - start_time)
     return redirect(url_for('home'))
+
+
+# def get_last_price(item):
+#     last_price = item.price_updates[0].price
+#     return last_price
 
 
 

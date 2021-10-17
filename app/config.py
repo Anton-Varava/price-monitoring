@@ -6,6 +6,7 @@ load_dotenv()
 
 class Configuration(object):
     DEBUG = True
+    # DEBUG = False
 
     # PostgreSQL config
     # SQLALCHEMY_DATABASE_URI = os.getenv('DB_URL')
