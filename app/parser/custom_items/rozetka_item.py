@@ -10,7 +10,7 @@ class RozetkaItem(Item):
     """
 
     @classmethod
-    async def _get_response_from_item_source(cls, item_url):
+    async def _get_response_from_item_source(cls, item_url) -> object:
         """
         Gets response from Rozetka web-page.
         :return: Response object
@@ -29,6 +29,7 @@ class RozetkaItem(Item):
         response = await session.get(item_url, headers=super()._HEADERS)
         await response.html.arender()
         await session.close()
+        await browser.close()
         return response
 
     async def _get_html_attrs(self) -> dict:

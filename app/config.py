@@ -13,3 +13,4 @@ class Configuration(object):
     SQLALCHEMY_DATABASE_URI = 'postgresql://ss_user:devpass@localhost/price_monitoring_db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = '<s6W1PfGYre!(3m|aNF">^jTBN^k#.'
+    SCHEDULER_API_ENABLED = True

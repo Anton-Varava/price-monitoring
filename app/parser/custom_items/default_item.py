@@ -70,6 +70,7 @@ class Item:
             # render html by js
             await response.html.arender(sleep=1.5)
         await session.close()
+        await browser.close()
         return response
 
     @staticmethod

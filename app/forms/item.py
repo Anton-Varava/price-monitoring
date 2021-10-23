@@ -12,3 +12,10 @@ class CreateItemForm(FlaskForm):
     min_desired_price = DecimalField('Minimum desired price', validators=[Optional(), NumberRange(min=0)])
     max_allowable_price = DecimalField('Maximum allowable price', validators=[Optional()])
     submit = SubmitField('Confirm')
+
+
+class EditItemForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    min_desired_price = DecimalField('Minimum desired price', validators=[Optional(), NumberRange(min=0)])
+    max_allowable_price = DecimalField('Maximum allowable price', validators=[Optional()])
+    submit = SubmitField('Confirm')

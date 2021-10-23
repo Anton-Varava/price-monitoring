@@ -17,7 +17,6 @@ class UsaAutoOnlineItem(Item):
         :return: Response object
         :rtype: object
         """
-        print('get here')
         session = AsyncHTMLSession()
         browser = await pyppeteer.launch({
             'ignoreHTTPSErrors': True,

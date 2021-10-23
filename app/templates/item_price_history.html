@@ -1,0 +1,18 @@
+{% if item.price_updates %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for update in item.price_updates %}
+            <tr>
+                <td>{{ update.date_updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ update.price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

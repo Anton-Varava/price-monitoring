@@ -18,32 +18,6 @@
             {% endif %}
         </div>
         <div class="form-group">
-            {{ form.item_url.label(class_="form-control-label") }}
-            {% if form.item_url.errors %}
-            {{ form.item_url(class="form-control form-control-lg is-invalid") }}
-            <div class="invalid-feedback">
-                {% for error in form.item_url.errors %}
-                <span>{{ error }}</span>
-                {% endfor %}
-            </div>
-            {% else %}
-            {{ form.item_url(class="form-control form-control-lg") }}
-            {% endif %}
-        </div>
-        <div class="form-group">
-            {{ form.current_price.label(class_="form-control-label") }}
-            {% if form.current_price.errors %}
-            {{ form.current_price(class="form-control form-control-lg is-invalid") }}
-            <div class="invalid-feedback">
-                {% for error in form.current_price.errors %}
-                <span>{{ error }}</span>
-                {% endfor %}
-            </div>
-            {% else %}
-            {{ form.current_price(class="form-control form-control-lg") }}
-            {% endif %}
-        </div>
-        <div class="form-group">
             {{ form.min_desired_price.label(class_="form-control-label") }}
             {% if form.min_desired_price.errors %}
             {{ form.min_desired_price(class="form-control form-control-lg is-invalid") }}
