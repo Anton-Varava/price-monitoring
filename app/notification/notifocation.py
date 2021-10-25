@@ -1,17 +1,24 @@
-from app.models import User, Item
+import yagmail
+
+yagmail.register(username='price.monitoring.dev@gmail.com', password='ihj5DTw9K6XWmQM')
 
 
 class Notification:
-    @classmethod
-    def notify_about_price_changing(cls, user: User, item: Item):
-        print(f'Sending a notification to {user} about {item}. The price has changed.')
 
     @classmethod
-    def notify_about_allowable_price(cls, user: User, item: Item):
-        print(f'Sending a notification to {user} about {item}. '
-              f'The price of the acceptable maximum. You will no longer receive a price alert.')
+    def notify_to_email(cls, message, email_address):
+        try:
+            cls._send_email_with_yagmail(content=message, receiver=email_address)
+        except:
+            return False
+        return True
+
 
     @classmethod
-    def notify_about_desired_price(cls, user: User, item: Item):
-        print(f'Sending a notification to {user} about {item}. The price has reached the desired mark.')
-
+    def _send_email_with_yagmail(cls, content, receiver):
+        yag_connection = yagmail.SMTP('price.monitoring.dev@gmail.com')
+        yag_connection.send(
+            to=receiver,
+            subject='Price Tracking',
+            contents=content
+        )

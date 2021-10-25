@@ -93,6 +93,7 @@ async def update_current_price(item_id: int):
 async def _update_current_price(item_to_update_price: Item):
     """
     Takes an Item object and updates an item current price.
+    Calls method 'notify_logic' to make a decision on alerting a User.
     Calls method 'update_item_price_history' for updating price history.
 
     :param item_to_update_price: An Item object.
@@ -117,12 +118,21 @@ async def _update_current_price(item_to_update_price: Item):
 
 
 def notify_logic(user: User, item: Item):
+    """
+    Sends an email with info on price changes.
+
+    :param user: An User object.
+    :param item: An Item object.
+    :return: None
+    """
     if item.min_desired_price and item.current_price <= item.min_desired_price:
-        Notification.notify_about_allowable_price(user=user, item=item)
+        message = f'Sending a notification to {user} about {item}. The price has reached the desired mark.'
     elif item.max_allowable_price and item.current_price >= item.max_allowable_price:
-        Notification.notify_about_desired_price(user=user, item=item)
+        message = f'Sending a notification to {user} about {item}. ' \
+                  f'The price of the acceptable maximum. You will no longer receive a price alert.'
     else:
-        Notification.notify_about_price_changing(user=user, item=item)
+        message = f'Sending a notification to {user} about {item}. The price has changed.'
+    Notification.notify_to_email(message=message, email_address=user.email)
 
 
 def update_item_price_history(product: Item):
@@ -170,6 +180,7 @@ async def delete_item(item_id: int):
     """
     item = Item.query.get_or_404(item_id)
 
+    # Check if is owner.
     if current_user.get_id() != str(item.user_id):  # current_user.get_id() return string
         abort(403)
 
@@ -182,15 +193,20 @@ async def delete_item(item_id: int):
 
 @app.route('/<int:item_id>/edit', methods=['GET', 'POST'])
 async def edit_item(item_id: int):
-
+    """
+    Route for editing Item. 'title', 'min_desired_price', 'max_allowable_price' can be edited.
+    :param item_id: ID of an Item.
+    """
     item = Item.query.get_or_404(item_id)
 
+    # Check if is owner.
     if current_user.get_id() != str(item.user_id):  # current_user.get_id() return string
         abort(403)
 
     form = EditItemForm()
     if request.method == 'GET':
         form.title.data = item.title
+        form.current_price.data = item.current_price
         form.min_desired_price.data = item.min_desired_price
         form.max_allowable_price.data = item.max_allowable_price
 
