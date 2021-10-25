@@ -26,5 +26,6 @@ login_manager.login_view = 'sign_in'
 login_manager.login_message_category = 'info'
 
 from app import routes
+from app import scheduled_tasks
 
 

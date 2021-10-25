@@ -8,7 +8,7 @@ from flask_login import current_user
 
 from app.forms import CreateItemForm, EditItemForm
 from app.models import Item, ItemPriceHistory, User
-from app import app, db, bcrypt, scheduler
+from app import app, db, bcrypt
 from app.parser import ItemFactory
 from app.notification import Notification
 
@@ -220,23 +220,5 @@ async def edit_item(item_id: int):
             flash('Item updated successfully.', 'success')
             return redirect(url_for('home'))
     return render_template('item_edit_form.html', title='Update item', form=form, legend='Update item')
-
-
-async def total_items_update():
-    """
-    Updates a current price of all Items in db.
-    Calls '_update_current_price' for every Item.
-    """
-    all_items = Item.query.all()
-    tasks = (_update_current_price(item) for item in all_items)
-    await asyncio.gather(*tasks)
-
-
-@scheduler.scheduled_job('interval', minutes=5)
-def scheduled_prices_update_task():
-    start_time = datetime.now()
-    asyncio.run(total_items_update())
-    print(f'Updated at {datetime.now()}. Task is completed by {datetime.now() - start_time}')
-
 
 
