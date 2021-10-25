@@ -222,3 +222,18 @@ async def edit_item(item_id: int):
     return render_template('item_edit_form.html', title='Update item', form=form, legend='Update item')
 
 
+@app.route('/<int:item_id>/chart', methods=['GET'])
+def item_price_chart(item_id):
+    item_history = ItemPriceHistory.query.filter_by(item_id=item_id)
+    # item_history = ItemPriceHistory.query.filter_by(item_id=item_id).all()
+    history = [(item_record.date_updated.strftime('%Y-%m-%d %H:%M'), item_record.price) for item_record in item_history]
+
+    labels = [row[0] for row in history]
+    values = [row[1] for row in history]
+    print(labels)
+    print(values)
+    return render_template('price_chart.html', history=history, prices=values, dates=labels)
+
+
+
+

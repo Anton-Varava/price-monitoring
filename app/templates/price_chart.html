@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const labels = {{ dates|safe }};
+const data = {
+  labels: labels,
+  datasets: [{
+    label: 'My First dataset',
+    backgroundColor: 'rgb(255, 99, 132)',
+    borderColor: 'rgb(255, 99, 132)',
+    data: {{ prices|safe }},
+  }]
+};
+const config = {
+  type: 'line',
+  data: data,
+  options: {}
+};
+const myChart = new Chart(
+        document.getElementById('myChart'),
+        config
+);
+</script>
+
+
+
+
+{% endblock content %}
