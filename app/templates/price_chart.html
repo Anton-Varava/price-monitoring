@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+<a href="{{ url_for('home')}}"><- Back to Home Page</a>
 <div>
   <canvas id="myChart"></canvas>
 </div>
@@ -10,7 +11,7 @@ const labels = {{ dates|safe }};
 const data = {
   labels: labels,
   datasets: [{
-    label: 'My First dataset',
+    label: '{{ item_title }}',
     backgroundColor: 'rgb(255, 99, 132)',
     borderColor: 'rgb(255, 99, 132)',
     data: {{ prices|safe }},

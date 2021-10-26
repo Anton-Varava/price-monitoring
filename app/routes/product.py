@@ -105,7 +105,7 @@ async def _update_current_price(item_to_update_price: Item):
     user = User.query.get(item_to_update_price.user_id)
     try:
         current_price = await ItemFactory.get_current_price(item_url=item_url, html_attr=html_attrs)
-    except:
+    except Exception as e:
         return None
     item_to_update_price.current_price = current_price
 
@@ -160,8 +160,8 @@ async def update_all_user_item_prices():
         await asyncio.gather(*tasks)
 
         # To compare synchronous and asynchronous updates
-        # for item in items:
-        #     await update_current_price(item.id)
+        # for item in user_items:
+        #     await _update_current_price(item)
     except:
         flash('Failed to update a product prices', 'danger')
 
@@ -224,15 +224,15 @@ async def edit_item(item_id: int):
 
 @app.route('/<int:item_id>/chart', methods=['GET'])
 def item_price_chart(item_id):
-    item_history = ItemPriceHistory.query.filter_by(item_id=item_id)
-    # item_history = ItemPriceHistory.query.filter_by(item_id=item_id).all()
+    item = Item.query.get_or_404(item_id)
+    # item_history = item.price_updates.order_by('date_updated').all()
+
+    item_history = ItemPriceHistory.query.filter_by(item_id=item_id).order_by('date_updated')
     history = [(item_record.date_updated.strftime('%Y-%m-%d %H:%M'), item_record.price) for item_record in item_history]
 
     labels = [row[0] for row in history]
     values = [row[1] for row in history]
-    print(labels)
-    print(values)
-    return render_template('price_chart.html', history=history, prices=values, dates=labels)
+    return render_template('price_chart.html', history=history, prices=values, dates=labels, item_title=item.title)
 
 
 

@@ -157,7 +157,6 @@ class Item:
     async def get_current_price_by_html_attrs(cls, item_url, html_attrs):
         response = await cls._get_response_from_item_source(item_url=item_url)
         page_soup = cls._make_item_page_soup(response)
-
         html_element_with_current_price = page_soup.find(attrs=html_attrs)
         full_attrs_of_html_element_with_current_price = html_element_with_current_price.attrs
         if full_attrs_of_html_element_with_current_price.get('content'):

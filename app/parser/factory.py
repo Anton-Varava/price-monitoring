@@ -40,7 +40,6 @@ class ItemFactory:
         :rtype: object
         """
         domain = urlparse(item_url).netloc
-        print(domain)
         class_for_item = ItemFactory._sources.get(domain)
         if class_for_item:
             item = class_for_item(item_url=item_url, current_price=current_price)

@@ -1,7 +1,7 @@
 from flask import render_template, url_for, redirect, request, flash
 from flask_login import login_user, current_user, logout_user
 
-from app.forms import LoginForm, RegistrationForm
+from app.forms import LoginForm, RegistrationForm, ResetPasswordForm
 from app.models import User
 from app import app, db, bcrypt
 
@@ -41,6 +41,23 @@ def sign_up():
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+
+@app.route("/reset_password", methods=['GET', 'POST'])
+def reset_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        print(user)
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user.password = hashed_password
+        db.session.commit()
+        flash('Your password has been updated! You are now able to log in', 'success')
+        return redirect(url_for('sign_in'))
+    return render_template('reset_password.html', title='Reset Password', form=form)
+
 
 
 

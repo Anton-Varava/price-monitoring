@@ -6,13 +6,13 @@ from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 import os
 
-from app.config import Configuration
+from app.config import DevelopmentConfig, ProductionConfig
 
 load_dotenv()
 
 app = Flask(__name__)
-app.config.from_object(Configuration)
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URL')
+config = DevelopmentConfig() if os.getenv('FLASK_ENV') == 'development' else ProductionConfig()
+app.config.from_object(config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)

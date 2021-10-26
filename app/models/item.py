@@ -15,7 +15,7 @@ class Item(db.Model):
     min_desired_price = db.Column(db.Float, nullable=True)
     max_allowable_price = db.Column(db.Float, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
-    price_updates = db.relationship('ItemPriceHistory', lazy=True, order_by='ItemPriceHistory.date_updated.desc()')
+    price_updates = db.relationship('ItemPriceHistory', lazy='dynamic', order_by='ItemPriceHistory.date_updated.desc()')
     folder_id = db.Column(db.Integer, db.ForeignKey('items_folders.id', ondelete='CASCADE'), nullable=True)
 
     def __repr__(self):
