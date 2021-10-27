@@ -2,7 +2,6 @@ import pyppeteer
 from bs4 import BeautifulSoup
 import re
 from requests_html import AsyncHTMLSession
-import asyncio
 
 
 class Item:

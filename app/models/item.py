@@ -23,6 +23,9 @@ class Item(db.Model):
 
 
 class ItemPriceHistory(db.Model):
+    """
+    Item price history record description.
+    """
     __tablename__ = 'items_price_history'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -35,6 +38,9 @@ class ItemPriceHistory(db.Model):
 
 
 class ItemsFolder(db.Model):
+    """
+    Description of Item Folder for grouping Item objects.
+    """
     __tablename__ = 'items_folders'
 
     id = db.Column(db.Integer, primary_key=True)

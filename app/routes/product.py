@@ -17,7 +17,6 @@ from app.notification import Notification
 async def add_item_for_tracking():
     """
     Adds a new item for price tracking. If success - adds a record in 'items_price_history'.
-    :return:
     """
     form = CreateItemForm()
     if request.method == 'POST':
@@ -49,7 +48,6 @@ async def add_item_for_tracking():
 async def init_item(item_url: str, current_price: str, user_id: int, title: str, min_desired_price=None, max_allowable_price=None):
     """
     Gets an item info from parser and adds an Item object to db.
-
     """
     item_from_parser = await ItemFactory.create_item(item_url=item_url, current_price=current_price)
     if not item_from_parser:
@@ -71,7 +69,7 @@ async def init_item(item_url: str, current_price: str, user_id: int, title: str,
 @app.route('/<int:item_id>/update')
 async def update_current_price(item_id: int):
     """
-    Updates current price of an item using html_attrs. Flash success message with time
+    Updates current price of an item using html_attrs. Flash success message with time.
 
     :param item_id: An Item ID
     :type item_id: int
@@ -102,18 +100,20 @@ async def _update_current_price(item_to_update_price: Item):
     html_attrs = json.loads(item_to_update_price.html_attrs)
     item_url = item_to_update_price.item_url
     price_before_update = item_to_update_price.current_price
-    user = User.query.get(item_to_update_price.user_id)
+    user = User.query.filter_by(id=item_to_update_price.user_id).first()
     try:
         current_price = await ItemFactory.get_current_price(item_url=item_url, html_attr=html_attrs)
-    except Exception as e:
+    except:
         return None
     item_to_update_price.current_price = current_price
+    db.session.commit()
 
+    update_item_price_history(product=item_to_update_price)
+
+    # Calls notify_logic if price is changed
     if item_to_update_price.current_price != price_before_update:
         notify_logic(user=user, item=item_to_update_price)
 
-    db.session.commit()
-    update_item_price_history(product=item_to_update_price)
     return item_to_update_price
 
 
@@ -123,15 +123,19 @@ def notify_logic(user: User, item: Item):
 
     :param user: An User object.
     :param item: An Item object.
-    :return: None
     """
+    # If a price has dropped to a desired level
     if item.min_desired_price and item.current_price <= item.min_desired_price:
-        message = f'Sending a notification to {user} about {item}. The price has reached the desired mark.'
+        message = f'The price of {item.title} has reached the desired mark.'
+
+    # If a price has exceeded an allowed maximum
     elif item.max_allowable_price and item.current_price >= item.max_allowable_price:
-        message = f'Sending a notification to {user} about {item}. ' \
-                  f'The price of the acceptable maximum. You will no longer receive a price alert.'
+        message = f'The price of {item.title}the acceptable maximum. You will no longer receive a price alert.'
+
+    # If no price restrictions are specified then
     else:
-        message = f'Sending a notification to {user} about {item}. The price has changed.'
+        message = f'The price of {item.title} has changed.'
+
     Notification.notify_to_email(message=message, email_address=user.email)
 
 
@@ -223,9 +227,16 @@ async def edit_item(item_id: int):
 
 
 @app.route('/<int:item_id>/chart', methods=['GET'])
-def item_price_chart(item_id):
+def item_price_chart(item_id: int):
+    """
+    Route for viewing the schedule of changes in the price of an item.
+    :param item_id: ID of an Item object
+    """
     item = Item.query.get_or_404(item_id)
-    # item_history = item.price_updates.order_by('date_updated').all()
+
+    # Check if is owner.
+    if current_user.get_id() != str(item.user_id):  # current_user.get_id() return string
+        abort(403)
 
     item_history = ItemPriceHistory.query.filter_by(item_id=item_id).order_by('date_updated')
     history = [(item_record.date_updated.strftime('%Y-%m-%d %H:%M'), item_record.price) for item_record in item_history]

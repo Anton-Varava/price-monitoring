@@ -13,6 +13,10 @@ class DevelopmentConfig(object):
     SECRET_KEY = os.getenv('SECRET_KEY')
     SCHEDULER_API_ENABLED = True
 
+    # Mail config
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+
 
 class ProductionConfig(object):
     DEBUG = False
@@ -22,5 +26,9 @@ class ProductionConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv('SECRET_KEY')
     SCHEDULER_API_ENABLED = True
+
+    # Mail config
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
 
 

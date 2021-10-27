@@ -1,9 +1,10 @@
 from flask import render_template, url_for, redirect, request, flash
 from flask_login import login_user, current_user, logout_user
 
-from app.forms import LoginForm, RegistrationForm, ResetPasswordForm
+from app.forms import LoginForm, RegistrationForm, ResetPasswordForm, RequestResetPasswordForm
 from app.models import User
 from app import app, db, bcrypt
+from app.notification import Notification
 
 
 @app.route('/sign-in', methods=['GET', 'POST'])
@@ -43,19 +44,48 @@ def logout():
     return redirect(url_for('home'))
 
 
+def send_password_reset_email(user: User):
+    token = user.get_reset_token()
+    reset_link = f"{url_for('request_for_reset_password', _external=True)}/{token}"
+    Notification.send_password_reset_instructions(reset_link=reset_link, email_address=user.email)
+
+
 @app.route("/reset_password", methods=['GET', 'POST'])
-def reset_password():
+def request_for_reset_password():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-    form = ResetPasswordForm()
+    form = RequestResetPasswordForm()
+
+    # If request method POST
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        print(user)
+        send_password_reset_email(user)
+        flash('An email has been sent with instructions to reset your password.', 'info')
+        return redirect(url_for('sign_in'))
+
+    # If request method GET
+    return render_template('reset_request.html', title='Reset Password', form=form)
+
+
+@app.route("/reset_password/<token>", methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    user = User.verify_reset_token(token)
+    if not User:
+        flash('That link for reset password is an invalid or expired', 'warning')
+        return redirect(url_for('request_for_reset_password'))
+    form = ResetPasswordForm()
+
+    # If request method POST
+    if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user.password = hashed_password
         db.session.commit()
-        flash('Your password has been updated! You are now able to log in', 'success')
+        flash('Your password has been updated', 'success')
         return redirect(url_for('sign_in'))
+
+    # If request method GET
     return render_template('reset_password.html', title='Reset Password', form=form)
 
 
