@@ -32,7 +32,8 @@ async def add_item_for_tracking():
                                        current_price=form.current_price.data,
                                        title=form.title.data,
                                        min_desired_price=form.min_desired_price.data,
-                                       max_allowable_price=form.max_allowable_price.data)
+                                       max_allowable_price=form.max_allowable_price.data,
+                                       folder_id=form.folder.data.id)
             if not new_item:
                 flash('Failed to add an item for tracking.', 'danger')
                 return redirect(url_for('add_item_for_tracking'))
@@ -45,7 +46,8 @@ async def add_item_for_tracking():
     return render_template('item_form.html', form=form, legend='Add item'), 200
 
 
-async def init_item(item_url: str, current_price: str, user_id: int, title: str, min_desired_price=None, max_allowable_price=None):
+async def init_item(item_url: str, current_price: str, user_id: int, title: str,
+                    min_desired_price=None, max_allowable_price=None, folder_id=None):
     """
     Gets an item info from parser and adds an Item object to db.
     """
@@ -57,7 +59,8 @@ async def init_item(item_url: str, current_price: str, user_id: int, title: str,
                       current_price=item_from_parser.current_price,
                       html_attrs=json.dumps(item_from_parser.html_attrs),
                       min_desired_price=min_desired_price,
-                      max_allowable_price=max_allowable_price)
+                      max_allowable_price=max_allowable_price,
+                      folder_id=folder_id)
     try:
         db.session.add(item_to_db)
         db.session.commit()
@@ -213,12 +216,15 @@ async def edit_item(item_id: int):
         form.current_price.data = item.current_price
         form.min_desired_price.data = item.min_desired_price
         form.max_allowable_price.data = item.max_allowable_price
+        form.folder.data = item.folder
 
     elif request.method == 'POST':
         if form.validate_on_submit():
             item.title = form.title.data
             item.min_desired_price = form.min_desired_price.data
             item.max_allowable_price = form.max_allowable_price.data
+            item.folder_id = form.folder.data.id
+
             db.session.commit()
 
             flash('Item updated successfully.', 'success')

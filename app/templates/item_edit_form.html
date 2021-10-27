@@ -49,6 +49,19 @@
             {{ form.max_allowable_price(class="form-control form-control-lg") }}
             {% endif %}
         </div>
+        <div class="form-group">
+            {{ form.folder.label(class_="form-control-label") }}
+            {% if form.folder.errors %}
+            {{ form.folder(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+                {% for error in form.folder.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            {{ form.folder(class="form-control form-control-lg") }}
+            {% endif %}
+        </div>
     </fieldset>
     <div class="form-group">
         {{ form.submit(class="btn btn-outline-info") }}

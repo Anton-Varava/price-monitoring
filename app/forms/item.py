@@ -1,6 +1,24 @@
+from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, DecimalField
+from wtforms import StringField, SubmitField, DecimalField, SelectField
 from wtforms.validators import DataRequired, Optional, NumberRange, URL, ValidationError
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from functools import partial
+from sqlalchemy import orm
+
+
+from app.models import ItemsFolder, User
+
+
+def get_folder_choices(columns=None):
+    folders = ItemsFolder.query.filter_by(user_id=current_user.get_id())
+    if columns:
+        folders = folders.options(orm.load_only(*columns))
+    return folders
+
+
+def get_folder_choices_factory(columns=None):
+    return partial(get_folder_choices, columns=columns)
 
 
 def is_numeric_field(form, field):
@@ -38,6 +56,10 @@ class CreateItemForm(FlaskForm):
                                                                           less_than_current_price_check])
     max_allowable_price = DecimalField('Maximum allowable price', validators=[Optional(), is_numeric_field,
                                                                               more_than_current_price_check])
+    folder = QuerySelectField('Folder',
+                              query_factory=get_folder_choices_factory(['id', 'title']),
+                              get_label='title',
+                              allow_blank=True)
     submit = SubmitField('Confirm')
 
 
@@ -48,4 +70,11 @@ class EditItemForm(FlaskForm):
                                                                           less_than_current_price_check])
     max_allowable_price = DecimalField('Maximum allowable price', validators=[Optional(),
                                                                               more_than_current_price_check])
+    folder = QuerySelectField('Folder',
+                              query_factory=get_folder_choices_factory(['id', 'title']),
+                              get_label='title',
+                              allow_blank=True)
     submit = SubmitField('Confirm')
+
+
+

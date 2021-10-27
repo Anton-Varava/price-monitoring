@@ -23,6 +23,7 @@ class User(db.Model, UserMixin):
     is_staff = db.Column(db.Boolean, default=False)
     is_superuser = db.Column(db.Boolean, default=False)
     items = db.relationship('Item', backref='user', lazy=True)
+    folders = db.relationship('ItemsFolder', backref='user', lazy=True)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)

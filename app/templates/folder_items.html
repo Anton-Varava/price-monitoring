@@ -1,27 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
-{% if not current_user.is_authenticated %}
-    <h3>Please login to continue...</h3>
-{% else %}
-    <a class="btn btn-secondary" href="{{ url_for('add_item_for_tracking')}}" role="button">Add new item</a>
-    <a class="btn btn-secondary" href="{{ url_for('update_all_user_item_prices')}}" role="button">Update All</a>
-    <a class="btn btn-secondary" href="{{ url_for('create_folder')}}" role="button">New Folder</a>
-
-    {% if folders %}
-    <div class="container folders-section">
-            {% for folder in folders %}
-                <div class="row items-folder">
-                    <div class="col-md-10">
-                        <a href="{{ url_for('folder_items', folder_id=folder.id)}}">{{ folder.title}}</a>
-                    </div>
-                </div>
-            {% endfor %}
-    </div>
-    {% endif %}
-    {% if no_folder_items %}
+{% if items %}
+    <h3>{{ folder.title}}</h3>
     <div class="container">
         <ul>
-            {% for item in no_folder_items %}
+            {% for item in items %}
             <div class="row">
                 <div class="row">
                     <div class="col-md-10">
@@ -51,6 +34,7 @@
             {% endfor %}
         </ul>
     </div>
-    {% endif %}
+{% else %}
+    <p>No items to show</p>
 {% endif %}
 {% endblock content %}

@@ -46,7 +46,7 @@ class ItemsFolder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     title = db.Column(db.String(100), nullable=False)
-    items = db.relationship('Item', lazy=True)
+    items = db.relationship('Item', lazy=True, backref=db.backref('folder', lazy=True))
 
     def __repr__(self):
-        return f'"{self.title}" by User-{self.user_id}'
+        return f'Folder "{self.title}" of user {self.user_id}'
