@@ -32,7 +32,7 @@ class Notification:
         :param reset_link: A password reset link.
         :return: True if an email is sent, else - False
         """
-        content = "To reset your password, follow the link\n" \
+        content = f"{cls._RESET_PASSWORD_MESSAGE}" \
                   f"{reset_link}"
         try:
             cls._send_email_with_yagmail(content=content, receiver=email_address, subject='Reset Password')
@@ -42,6 +42,13 @@ class Notification:
 
     @staticmethod
     def _send_email_with_yagmail(content, receiver, subject):
+        """
+        Sends an email using yagmail library.
+
+        :param content: Message content
+        :param receiver: Receivers email
+        :param subject: Mail subject
+        """
         yag_connection = yagmail.SMTP(app.config['MAIL_USERNAME'])
         yag_connection.send(
             to=receiver,

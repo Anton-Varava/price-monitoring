@@ -46,7 +46,7 @@ class Item:
         self._html_attrs = await self._get_html_attrs()
 
     @classmethod
-    async def _get_response_from_item_source(cls, item_url) -> object:
+    async def _get_response_from_item_source(cls, item_url: str) -> object:
         """
         Gets response from a web-page.
 
@@ -91,7 +91,7 @@ class Item:
         :rtype: dict
         """
         html_attrs = None
-        html_element = await self._find_html_element_with_current_from_web_page()
+        html_element = await self._find_html_element_with_current_price_from_web_page()
         if html_element:
             html_attrs = html_element.attrs
             # Needed to discard the fractional part if the price is without it
@@ -106,7 +106,7 @@ class Item:
                     del html_attrs[key]
         return html_attrs
 
-    async def _find_html_element_with_current_from_web_page(self) -> object:
+    async def _find_html_element_with_current_price_from_web_page(self) -> object:
         """
         Gets a html-element from a web-page for tracking price.
 
@@ -125,7 +125,7 @@ class Item:
         for possible_tag in Item._possible_tags:
             for html_element in page_soup.select(f'{possible_tag}[class*="price"]'):
                 if self.current_price == self._get_price_number_from_str(html_element.text):
-                    if not result:
+                    if not result or len(result) > len(html_element):
                         result = html_element
         return result
 
@@ -153,7 +153,13 @@ class Item:
         return None
 
     @classmethod
-    async def get_current_price_by_html_attrs(cls, item_url, html_attrs):
+    async def get_current_price_by_html_attrs(cls, item_url: str, html_attrs: str):
+        """
+        Gets the current price of an Item using a specified html_attr.
+        :param item_url: An Item link
+        :param html_attrs: Attrs of html-element with current price
+        :return: Current price
+        """
         response = await cls._get_response_from_item_source(item_url=item_url)
         page_soup = cls._make_item_page_soup(response)
         html_element_with_current_price = page_soup.find(attrs=html_attrs)
@@ -174,7 +180,6 @@ class Item:
         """
         price = None
         price_in_string = re.search(r'\d+(\s|\\xa0)?\d+((\.|,)\d{1,2})?', string_with_price)
-        # price_in_string = re.search(r'(\d+(\s|\\xa0|,)?)+((\.|,)\d{1,2})?', string_with_price)
         if price_in_string:
             price = float(price_in_string.group().replace(',', '.').replace(u'\xa0', '').replace(' ', ''))
         return price

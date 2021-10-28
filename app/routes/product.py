@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from flask import render_template, url_for, redirect, request, flash, abort
 from flask_login import current_user
 
-from app.forms import CreateItemForm, EditItemForm
+from app.forms import CreateItemForm, EditItemForm, ItemReparseForm
 from app.models import Item, ItemPriceHistory, User
 from app import app, db, bcrypt
 from app.parser import ItemFactory
@@ -26,14 +26,13 @@ async def add_item_for_tracking():
             if domain == 'elmir.ua':
                 flash('Failed to add an item for tracking.', 'danger')
                 return redirect(url_for('add_item_for_tracking'))
-
             new_item = await init_item(user_id=current_user.get_id(),
                                        item_url=form.item_url.data,
                                        current_price=form.current_price.data,
                                        title=form.title.data,
                                        min_desired_price=form.min_desired_price.data,
                                        max_allowable_price=form.max_allowable_price.data,
-                                       folder_id=form.folder.data.id)
+                                       folder_id=form.folder.data.id if form.folder.data else None)
             if not new_item:
                 flash('Failed to add an item for tracking.', 'danger')
                 return redirect(url_for('add_item_for_tracking'))
@@ -67,6 +66,32 @@ async def init_item(item_url: str, current_price: str, user_id: int, title: str,
     except:
         return None
     return item_to_db
+
+
+@app.route('/<int:item_id>/reparse', methods=['POST', 'GET'])
+async def reparse_item(item_id: int):
+    form = ItemReparseForm()
+    item = Item.query.get_or_404(item_id)
+    user = User.query.filter_by(id=item.user_id).first()
+    price_before_update = item.current_price
+
+    if form.validate_on_submit() and current_user.is_authenticated:
+        item_from_parser = await ItemFactory.create_item(item_url=item.item_url, current_price=form.current_price.data)
+        if not item_from_parser:
+            flash('Failed to add an item for tracking.', 'danger')
+            return redirect(url_for('home'))
+
+        item.current_price = item_from_parser.current_price
+        item.html_attrs = json.dumps(item_from_parser.html_attrs)
+
+        db.session.commit()
+
+        if item.current_price != price_before_update:
+            notify_logic(user=user, item=item)
+
+        flash(f'Item reparsed successfully. New attrs - {item_from_parser.html_attrs}', 'success')
+        return redirect(url_for('home'))
+    return render_template('item_reparse.html', form=form, item=item, legend='Reparse Item')
 
 
 @app.route('/<int:item_id>/update')
@@ -165,10 +190,6 @@ async def update_all_user_item_prices():
     tasks = (_update_current_price(item) for item in user_items)
     try:
         await asyncio.gather(*tasks)
-
-        # To compare synchronous and asynchronous updates
-        # for item in user_items:
-        #     await _update_current_price(item)
     except:
         flash('Failed to update a product prices', 'danger')
 

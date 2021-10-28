@@ -52,6 +52,14 @@ class ItemFactory:
 
     @staticmethod
     async def get_current_price(item_url, html_attr):
+        """
+        Gets the current price of an Item using a specified html_attr.
+
+        :param item_url: An item link
+        :type item_url: str
+        :param html_attr: Attrs of html-element with current price
+        :return: Current price
+        """
         domain = urlparse(item_url).netloc
         class_for_item = ItemFactory._sources.get(domain)
         if class_for_item:
@@ -60,3 +68,4 @@ class ItemFactory:
         else:
             current_price = await DefaultItem.get_current_price_by_html_attrs(item_url=item_url, html_attrs=html_attr)
         return current_price
+

@@ -77,4 +77,8 @@ class EditItemForm(FlaskForm):
     submit = SubmitField('Confirm')
 
 
+class ItemReparseForm(FlaskForm):
+    current_price = StringField('Current price', validators=[DataRequired(), is_numeric_field])
+    submit = SubmitField('Confirm')
+
 

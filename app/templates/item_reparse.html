@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+        <legend class="border-bottom mb-4">{{ legend }}</legend>
+
+        <div class="form-group">
+            {{ form.current_price.label(class_="form-control-label") }}
+            {% if form.current_price.errors %}
+            {{ form.current_price(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+                {% for error in form.current_price.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            {{ form.current_price(class="form-control form-control-lg") }}
+            {% endif %}
+        </div>
+
+    </fieldset>
+    <div class="form-group">
+        {{ form.submit(class="btn btn-outline-info") }}
+    </div>
+</form>
+{% endblock content %}

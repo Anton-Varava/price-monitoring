@@ -8,9 +8,7 @@ from flask_login import current_user
 
 from app.forms import FolderForm
 from app.models import Item, ItemsFolder, User
-from app import app, db, bcrypt
-from app.parser import ItemFactory
-from app.notification import Notification
+from app import app, db
 
 
 @app.route('/folder/add', methods=['GET', 'POST'])

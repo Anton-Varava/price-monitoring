@@ -1,5 +1,4 @@
 import pyppeteer
-from bs4 import BeautifulSoup
 from requests_html import AsyncHTMLSession
 
 from .default_item import Item

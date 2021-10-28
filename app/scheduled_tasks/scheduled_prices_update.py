@@ -18,7 +18,7 @@ async def total_items_update():
     await asyncio.gather(*tasks)
 
 
-@scheduler.scheduled_job('interval', minutes=5)
+@scheduler.scheduled_job('interval', minutes=10)
 def scheduled_prices_update_task():
     start_time = datetime.now()
     asyncio.run(total_items_update())
