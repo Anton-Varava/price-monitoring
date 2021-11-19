@@ -89,7 +89,7 @@ async def reparse_item(item_id: int):
         if item.current_price != price_before_update:
             notify_logic(user=user, item=item)
 
-        flash(f'Item reparsed successfully. New attrs - {item_from_parser.html_attrs}', 'success')
+        flash(f'Item reparsed successfully', 'success')
         return redirect(url_for('home'))
     return render_template('item_reparse.html', form=form, item=item, legend='Reparse Item')
 
@@ -244,7 +244,7 @@ async def edit_item(item_id: int):
             item.title = form.title.data
             item.min_desired_price = form.min_desired_price.data
             item.max_allowable_price = form.max_allowable_price.data
-            item.folder_id = form.folder.data.id
+            item.folder_id = form.folder.data.id if form.folder.data else None
 
             db.session.commit()
 
